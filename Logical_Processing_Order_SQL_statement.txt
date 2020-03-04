@@ -25,7 +25,8 @@ SQL Clause Keyed-In Order
 10. ORDER BY
 
 
-* The preceding steps show the logical processing order, or binding order, for a SELECT statement. Note, not all clauses are needed to successfully query for data, those required at minimum are: SELECT [columns] and FROM [table]; Yes. always end your statement with a semi-colon that is the best practice.
+* The preceding steps show the logical processing order, or binding order, for a SELECT statement. 
+	Note, not all clauses are needed to successfully query for data, those required at minimum are: SELECT [columns] and FROM [table]; Yes. always end your statement with a semi-colon that is the best practice.
 
 * The aforementioned order determines when the objects defined in one step are accessible to the clauses in subsequent steps. For example, during execution a given query has access the tables/ views defined in the FROM clause, these objects and their columns are made available to all subsequent steps. 
 
@@ -35,19 +36,42 @@ SQL Clause Keyed-In Order
 
 * Think about this as an exponential decline. There is a huge amount of information one starts with; the FROM, ON, and JOIN Clauses get the largest collection of unrefined data. During progression down the logical order data is being filtered out little by little, ending with the SELECT returning the specific data columns we are looking for in the result-set. 
 
-Examples
+What are the clauses doing??
+The data that are returned will be stored in a result table, called the result-set.
 
-Basic Syntax
+1. SELECT: used to select columns from a database table.
+
+2. DISTINCT: used to return only different values, based on the columns listed in the select SELECT statement.
+
+3. TOP: used, in conjunction with SELECT, to limit the number of rows that the result-set will contain to a number; n. eg. TOP 100
+
+4. FROM: used to state what table data will be sourced from.
+
+5. JOIN: combines rows from two or more tables based on a column relations between the tables.
+
+6. ON: used with JOIN to specify the condition(s) the JOIN will occur.
+
+7. WHERE: used to filter rows from the result-set based on one or more conditions.
+
+8. GROUP BY: groups like row values together; used a lot with aggregate SQL functions. 
+
+9. HAVING: very similar to WHERE, but aggregate functions cannot be used with WHERE, HAVING you can.
+
+10. ORDER BY: specifies the order the result-set will appear in, based on one or more columns and their ascending or descending sort order.
+
+
+Examples!
+
+Basic Syntax for a query
 
 	SELECT column1 as [FirstColumn]
-	FROM tableName
-	WHERE conditionForColumn1
-
-* the 'as' and [FirstColumn] represent a COLUMN ALIAS. where 'as' is the keyword (not required but definitely recommended) is used to define an alias name for the column to make the name more presentable, human-readable, actually change the name displayed (albeit not as common), etc. with no spaces [] brackets are not needed, but again recommended, with spaces [] brackets are required. 
-
+	FROM TableName
+	
 * generally, one does not want to play "fast and loose" with the data being returned, ie, SELECTing blindly from a table without the use of conditions is not a great idea. 
 
-Here is the table schema (test data and table create are here: Employees_TestData.sql)
+* COLUMN ALIAS: 'as' and [SomeColumn] represent a COLUMN ALIAS. where 'as' is the keyword (not required but definitely recommended) is used to define an alias name for the column to make the name more presentable, human-readable, actually change the name displayed (albeit not as common), etc. with no spaces [] brackets are not needed, but again recommended, with spaces [] brackets are required. 
+
+Here is the test table definition (test data and table create statement are here: Employees_TestData.sql)
 	 
 	 TABLE NAME 
 		- [Employees]
@@ -61,15 +85,25 @@ Here is the table schema (test data and table create are here: Employees_TestDat
 		- [IsActive] [varchar](50) 
 		- [YearsSinceHireDate]  AS (datediff(year,[HireDate],getdate()))
 			
-		-- NOTE the column [YearsSinceHireDate] is a CALCULATED COLUMN, which is a more advanced topic, but still worth knowing exists. This example is using the "datediff" SQL built-in function passing in the parameters of year, the hireDate, and the getDate SQL built-in function to calculate, hence the name, how many years it has been since the employee has been hired. eg, why this is needed, rather than typing the whole function out each time we can save our effort by defining that column to just simply retrieve the data straight away.
+		-- NOTE the column [YearsSinceHireDate] is a CALCULATED COLUMN, which is a more advanced topic, but still worth knowing exists. 
+		This example is using the "datediff" SQL built-in function passing in the parameters of year, the hireDate, and the getDate SQL built-in function to calculate, hence the name, how many years it has been since the employee has been hired.		
+		eg, why this is needed, rather than typing the whole function out each time we can save our effort by defining that column to just simply retrieve the data straight away.
 
 The task is to return a list of unique employees hired after 2005 who are still working at the company:
 
-	SELECT DISTINCT emp.FirstName as LastName,
-		emp.LastName as LastName,
-		emp.FirstName + ' ' + emp.LastName as FullName,
-		emp.HireDate,
-		emp.YearsSinceHireDate
+* One approach to this.
+	- First, what data do we want to see? 
+		-- since this is a report that will contain employees what information should we look for?
+		-- how can we describe the employee might be a good first thought.
+	- Next, what are the limits we need to impose, ie how can we filter?
+		-- looking at our task description above, we can see two things. What are they? what can we use to filter on?
+	- Finally, how are we going to present the report? what makes the most sense? 
+	
+How I would do this.
+
+	SELECT DISTINCT emp.FirstName + ' ' + emp.LastName as [FullName], 
+		emp.HireDate as [Hire Date], 
+		emp.YearsSinceHireDate as [Years Employed]
 	FROM Employees as [emp]
 	WHERE IsActive = 1
 		and HireDate > '01/01/2005'
@@ -86,41 +120,11 @@ Breakdown of what is happening.
 	- WHERE
 	- ORDER BY
 
-* Previously mentioned the 'as' keyword is defining some aliases for columns AND(!) the table. 
+* Previously mentioned the 'as' keyword is defining some aliases for columns AND(!) note the table too. 
+* SELECT we are taking both the FirstName and the LastName and concatenating the two columns together to make a new value of FullName. This does not have to be done, using the FirstName and the LastName as two columns is perfectly good. a disadvantage here of the concatenation is now, if we wanted to ORDER BY LastName we cannot, so we would need to SELECT the two names as separate columns. 
+* FROM simply, where does the data exist? I did not need to JOIN to another table to gain access to other information, but maybe we also want an employee's role in the company and that is stored in a different table. we can JOIN the two together with some condition to get that information too. 
 * WHERE clause is saying we are looking for those employees who are active yet at the company as well as those who were hired after the date we were given. 
 * ORDER BY we are sorting by the date a given employee was hired starting with the oldest to newest.
-
-Now, we need to get a list of the number (a count) of active employees, grouped by their hire date, who are still employed. 
-
-	SELECT DISTINCT COUNT(id) as [Number Of Employees]
-		, YearsSinceHireDate as [Years Employeed]
-	FROM Employees emp
-	WHERE IsActive = 1
-		and HireDate > '01/01/2005'
-	GROUP BY YearsSinceHireDate
-	ORDER BY YearsSinceHireDate DESC
-	;
-
-Breakdown of what is happening. 
-
-* Clauses being used
-
-	- SELECT 
-	- DISTINCT
-	- FROM
-	- WHERE
-	- GROUP BY
-	- ORDER BY
-
-* as keyword (same as above)
-* WHERE clause (same as above)
-* COUNT built-in SQL function used to return an a given (integer)number of instances/occurrences for column; in this case we are returning the number of employee IDs that are found based on the query conditions.
-* GROUP BY is taking the number of years since the employee was hired, and condensing the number of ROWS returned to the result-set to list the unique number of years with the total number of employees. 
-* ORDER BY(same as above)
-
-
-
-
 
 
 
