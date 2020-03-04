@@ -1,6 +1,6 @@
 Logical Processing Order of the SELECT statement using T-SQL 
 
-SQL Clauses in logical order of execution.
+SQL Clause Logical Order of Execution.
 1. FROM
 2. ON
 3. JOIN
@@ -12,6 +12,28 @@ SQL Clauses in logical order of execution.
 9. ORDER BY
 10. TOP
 
+SQL Clause Keyed-In Order
+1. SELECT
+2. DISTINCT
+3. TOP
+4. FROM
+5. JOIN
+6. ON
+7. WHERE
+8. GROUP BY
+9. HAVING
+10. ORDER BY
 
-The preceeding steps show the logical processing order, or binding order, for a SELECT statement. This order determines when the objects defined in one step are made available to the clauses in subsequent steps. For example, if the query processor can bind to (access) the tables or views defined in the FROM clause, these objects and their columns are made available to all subsequent steps. Conversely, because the SELECT clause is step 8, any column aliases or derived columns defined in that clause cannot be referenced by preceding clauses. However, they can be referenced by subsequent clauses such as the ORDER BY clause. The actual physical execution of the statement is determined by the query processor and the order may vary from this list.
+
+The preceding steps show the logical processing order, or binding order, for a SELECT statement. 
+
+The aforementioned order determines when the objects defined in one step are accessible to the clauses in subsequent steps. For example, during execution a given query has access the tables/ views defined in the FROM clause, these objects and their columns are made available to all subsequent steps. 
+
+Conversely, because the SELECT clause is step 7, any column aliases or derived columns defined in that clause cannot be referenced by preceding clauses. Meaning, that only the step(s) executed after the SELECT statement will have the ability to see the alias. 
+
+The actual physical execution of the statement is determined by the query processor and the order may vary from this list. (This is esoteric and not really applicable for my purposes.)
+
+Think about this as an exponential decline. There is a huge amount of information one starts with; the FROM, ON, and JOIN Clauses get the largest collection of unrefined data. During progression down the logical order data is being filtered out little by little, ending with the SELECT returning the specific data columns we are looking for in the result-set. 
+
+Examples
 
